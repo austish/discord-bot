@@ -1,5 +1,6 @@
 import random, json , os
 import numpy as np
+import discord
 
 def rps(user_input: str) -> str:
     list = ["rock", "paper", "scissors"]
@@ -77,3 +78,22 @@ def get_leaderboard(server_id):
     sorted_dict = {keys[i]: values[i] for i in sorted_value_index}
  
     return sorted_dict
+
+###  TEAM GENERATOR  ###
+
+#helper function to create text file with names of members
+def create_file(interact, path, id):
+    file = open(f'data\\{id}_names.txt', 'w', encoding="utf8")
+    for member in interact.guild.members:
+        if not member.bot:
+            file.write(f'{member.name}\n')
+    file.truncate()
+
+#check if name file exists, create it if not, add all names, and return file as read mode
+def check_file(interact: discord.Interaction, server_id):
+    path = f"C:\\Users\\austi\\OneDrive\\Documents\\CS\\python\\discord bot\\data\\{server_id}_names.txt"
+    if not os.path.exists(path):
+        create_file(interact, path, server_id)
+    elif os.stat(path).st_size == 0:
+        create_file(interact, path, server_id)
+    return open(f'data\\{server_id}_names.txt', 'r', encoding="utf8")
