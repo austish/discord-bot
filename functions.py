@@ -1,4 +1,4 @@
-import random, json , os
+import random, json, os
 import numpy as np
 import discord
 
@@ -33,12 +33,19 @@ def rps(user_input: str) -> str:
         return 'invalid input'
     return (f'Bot played {bot_input}. You {result}!')
 
+###  PLAYER POINTS  ###
+
+#check if json file exists
+def check_json_file(id):
+    if not os.path.exists(f"data\\{id}.json"):
+        with open((f'data\\{id}.json'), 'w') as f:
+            json.dump({}, f)
+        print (f'{id}.json created')
+
+#edit data
 def store_user_data(server_id, user_id, data):
     #check if file exists:
-    if not os.path.exists(f"C:\\Users\\austi\\OneDrive\\Documents\\CS\\python\\discord bot\\data\\{server_id}.json"):
-        with open((f'data\\{server_id}.json'), 'w') as f:
-            json.dump({}, f)
-            print (f'{server_id}.json created')
+    check_json_file(server_id)
 
     #read file content
     with open((f'data\\{server_id}.json'), 'r') as f:
@@ -57,7 +64,11 @@ def store_user_data(server_id, user_id, data):
         json.dump(user_data, f)
         f.truncate()
 
+#returns user data
 def get_user_data(server_id, user_id):
+    #check if file exists:  
+    check_json_file(server_id)
+
     #read file content
     with open((f'data\\{server_id}.json'), 'r') as f:
         user_data = json.load(f)
@@ -68,7 +79,12 @@ def get_user_data(server_id, user_id):
     else:
         return 0
 
+#returns sorted dict
 def get_leaderboard(server_id):
+    #check if file exists:  
+    check_json_file(server_id)
+
+    #get sorted dict
     with open((f'data\\{server_id}.json'), 'r') as f:
         user_data = json.load(f)
     
@@ -82,7 +98,7 @@ def get_leaderboard(server_id):
 ###  TEAM GENERATOR  ###
 
 #helper function to create text file with names of members
-def create_file(interact, path, id):
+def create_file(interact, id):
     file = open(f'data\\{id}_names.txt', 'w', encoding="utf8")
     for member in interact.guild.members:
         if not member.bot:
@@ -90,8 +106,8 @@ def create_file(interact, path, id):
     file.truncate()
 
 #check if name file exists, create it if not, add all names, and return file as read mode
-def check_file(interact: discord.Interaction, server_id):
-    path = f"C:\\Users\\austi\\OneDrive\\Documents\\CS\\python\\discord bot\\data\\{server_id}_names.txt"
+def check_txt_file(interact: discord.Interaction, server_id):
+    path = f"data\\{server_id}_names.txt"
     if not os.path.exists(path):
         create_file(interact, path, server_id)
     elif os.stat(path).st_size == 0:

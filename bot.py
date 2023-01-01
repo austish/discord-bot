@@ -1,6 +1,5 @@
 import discord
 import random
-import os
 from discord import app_commands
 from discord.ext import commands
 
@@ -8,7 +7,7 @@ from functions import rps
 from functions import store_user_data
 from functions import get_user_data
 from functions import get_leaderboard
-from functions import check_file
+from functions import check_txt_file
 
 bot = commands.Bot(command_prefix = '!', intents = discord.Intents.all())
 TOKEN = 'MTA0MDg3NzA0MDM1OTk4MTA5Ng.GPmMVh.9C_oN9zDzAxGN9TiqyEnSfXdjOgi3Fnw8PcbpI'
@@ -21,7 +20,6 @@ async def on_ready():           #on startup
         print(f'Synced {len(synced)} command(s)')
     except Exception as e:
         print(e)
-
 
 #hello command
 @bot.tree.command(name='hello', description='Say hello to the bot')                             #define bot command
@@ -86,7 +84,7 @@ async def leaderboard(interaction: discord.Interaction):
 @bot.tree.command(name="generate", description='generate teams')
 async def teams(interaction: discord.Interaction):
     #get names
-    file = check_file(interaction, interaction.guild.id)
+    file = check_txt_file(interaction, interaction.guild.id)
     names = file.read().split('\n')
     names.pop()
 
@@ -100,7 +98,7 @@ async def teams(interaction: discord.Interaction):
 @bot.tree.command(name="playerlist", description='get list of players')
 async def list(interaction: discord.Interaction):
     #initialize vars
-    file = check_file(interaction, interaction.guild.id)
+    file = check_txt_file(interaction, interaction.guild.id)
     names = file.read().split('\n')
 
     #create embed
@@ -116,7 +114,7 @@ async def list(interaction: discord.Interaction):
 @bot.tree.command(name="add_player", description='generate teams')
 async def add(interaction: discord.Interaction, member: discord.Member):
     #initialize vars
-    file =check_file(interaction, interaction.guild.id)
+    file =check_txt_file(interaction, interaction.guild.id)
     names = file.read().split('\n')
 
     #check if member in list
@@ -132,7 +130,7 @@ async def add(interaction: discord.Interaction, member: discord.Member):
 @bot.tree.command(name="remove_player", description='generate teams')
 async def remove(interaction: discord.Interaction, member: discord.Member):
     #initalize vars
-    file = check_file(interaction, interaction.guild.id)
+    file = check_txt_file(interaction, interaction.guild.id)
     names = file.read().split('\n')
 
     #check if member in list
