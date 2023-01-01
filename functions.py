@@ -109,7 +109,7 @@ def create_file(interact, id):
 def check_txt_file(interact: discord.Interaction, server_id):
     path = f"data\\{server_id}_names.txt"
     if not os.path.exists(path):
-        create_file(interact, path, server_id)
+        create_file(interact, server_id)
     elif os.stat(path).st_size == 0:
-        create_file(interact, path, server_id)
+        create_file(interact, server_id)
     return open(f'data\\{server_id}_names.txt', 'r', encoding="utf8")
