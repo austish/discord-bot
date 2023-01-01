@@ -47,15 +47,14 @@ async def r_p_s(interaction: discord.Interaction, choice: discord.app_commands.C
     discord.app_commands.Choice(name = 'Award', value = 0),
     discord.app_commands.Choice(name = 'Remove', value = 1),
 ])
-async def test(interaction: discord.Interaction, *, choice: discord.app_commands.Choice[int], member: discord.Member):
-    if member == interaction.user:
-        await interaction.response.send_message('You can\'t playerpoint yourself bruh')  
-    elif choice.value == 0:
-        store_user_data(interaction.guild.id, member.id, 1)
-        await interaction.response.send_message(f'{interaction.user.mention} awarded {member.mention} a player point!')    
+async def test(interaction: discord.Interaction, *, choice: discord.app_commands.Choice[int], member: discord.Member, amount: int):
+    value = abs(amount)
+    if choice.value == 0:
+        store_user_data(interaction.guild.id, member.id, value)
+        await interaction.response.send_message(f'{interaction.user.mention} awarded {member.mention} {value} player point(s)! They now have {get_user_data(interaction.guild.id, member.id)} player points.')    
     else:
-        store_user_data(interaction.guild.id, member.id, -1)
-        await interaction.response.send_message(f'{interaction.user.mention} removed a player point from {member.mention}')     
+        store_user_data(interaction.guild.id, member.id, -value)
+        await interaction.response.send_message(f'{interaction.user.mention} removed {value} player point(s) from {member.mention}. They now have {get_user_data(interaction.guild.id, member.id)} player points.')     
 
 
 #check player points

@@ -34,9 +34,7 @@ def rps(user_input: str) -> str:
 
 def store_user_data(server_id, user_id, data):
     #check if file exists:
-    if os.path.exists(f"C:\\Users\\austi\\OneDrive\\Documents\\CS\\python\\discord bot\\data\\{server_id}.json"):
-        print (f'{server_id}.json exists')
-    else:
+    if not os.path.exists(f"C:\\Users\\austi\\OneDrive\\Documents\\CS\\python\\discord bot\\data\\{server_id}.json"):
         with open((f'data\\{server_id}.json'), 'w') as f:
             json.dump({}, f)
             print (f'{server_id}.json created')
@@ -64,8 +62,8 @@ def get_user_data(server_id, user_id):
         user_data = json.load(f)
 
     #return data
-    if user_id in user_data:
-        return user_data.get(user_id)
+    if str(user_id) in user_data:
+        return user_data.get(str(user_id))
     else:
         return 0
 
