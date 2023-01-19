@@ -1,12 +1,8 @@
 ## Description:
-Discord bot with rock paper scissors, point counter, and team generator
+Discord bot that assists with games/events on servers. Give/remove points from users, view the leaderboard, and generate teams.
 
 - Todo:
-    - 
-
-<br><br>
-
-- Implemented:
+    - connect leaderboard to team generator to generate fair teams based on leaderboard/point ranking
 
 <br><br>
 
@@ -17,5 +13,3 @@ Discord bot with rock paper scissors, point counter, and team generator
 - Bugs:
 
 <br><br>
-
-# Reflections:
