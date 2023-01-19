@@ -48,7 +48,7 @@ def store_user_data(server_id, user_id, data):
     check_json_file(server_id)
 
     #read file content
-    with open((f'data\\{server_id}.json'), 'r') as f:
+    with open(f'data\\{server_id}.json') as f:
         user_data = json.load(f)            #store file into dict
 
     #check if user in json file
@@ -70,7 +70,7 @@ def get_user_data(server_id, user_id):
     check_json_file(server_id)
 
     #read file content
-    with open((f'data\\{server_id}.json'), 'r') as f:
+    with open(f'data\\{server_id}.json') as f:
         user_data = json.load(f)
 
     #return data
@@ -85,7 +85,7 @@ def get_leaderboard(server_id):
     check_json_file(server_id)
 
     #get sorted dict
-    with open((f'data\\{server_id}.json'), 'r') as f:
+    with open((f'data\\{server_id}.json')) as f:
         user_data = json.load(f)
     
     keys = list(user_data.keys())
@@ -112,4 +112,4 @@ def check_txt_file(interact: discord.Interaction, server_id):
         create_file(interact, server_id)
     elif os.stat(path).st_size == 0:
         create_file(interact, server_id)
-    return open(f'data\\{server_id}_names.txt', 'r', encoding="utf8")
+    return open(f'data\\{server_id}_names.txt', encoding="utf8")

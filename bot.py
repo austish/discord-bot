@@ -3,14 +3,12 @@ import random
 from discord import app_commands
 from discord.ext import commands
 
-from functions import rps
-from functions import store_user_data
-from functions import get_user_data
-from functions import get_leaderboard
-from functions import check_txt_file
+import functions
+import tokens
 
 bot = commands.Bot(command_prefix = '!', intents = discord.Intents.all())
-TOKEN = 'MTA0MDg3NzA0MDM1OTk4MTA5Ng.GPmMVh.9C_oN9zDzAxGN9TiqyEnSfXdjOgi3Fnw8PcbpI'
+TOKEN = tokens.token
+# TOKEN = tokens.test_toekn
 
 @bot.event
 async def on_ready():           #on startup
@@ -27,16 +25,16 @@ async def hello(interaction: discord.Interaction):                              
     await interaction.response.send_message(f'hello {interaction.user.mention}')                #return python function
 
 #rps command
-@bot.tree.command(name='rps', description='Play rock, paper, scissors with the bot')
-@app_commands.describe(choice = 'rock, paper, or scissors')
-@app_commands.choices(choice = [
-    discord.app_commands.Choice(name = 'Rock', value = 1),
-    discord.app_commands.Choice(name = 'Paper', value = 2),
-    discord.app_commands.Choice(name = 'Scissors', value = 3),
-])
-async def r_p_s(interaction: discord.Interaction, choice: discord.app_commands.Choice[int]):    
-    result = f'You selected: `{choice.name}` \n{rps(choice.name.lower())}'
-    await interaction.response.send_message(result)                                             
+# @bot.tree.command(name='rps', description='Play rock, paper, scissors with the bot')
+# @app_commands.describe(choice = 'rock, paper, or scissors')
+# @app_commands.choices(choice = [
+#     discord.app_commands.Choice(name = 'Rock', value = 1),
+#     discord.app_commands.Choice(name = 'Paper', value = 2),
+#     discord.app_commands.Choice(name = 'Scissors', value = 3),
+# ])
+# async def r_p_s(interaction: discord.Interaction, choice: discord.app_commands.Choice[int]):    
+#     result = f'You selected: `{choice.name}` \n{functions.rps(choice.name.lower())}'
+#     await interaction.response.send_message(result)                                             
 
 ########################
 ###  PLAYER POINTS  ###
@@ -52,16 +50,16 @@ async def r_p_s(interaction: discord.Interaction, choice: discord.app_commands.C
 async def test(interaction: discord.Interaction, *, choice: discord.app_commands.Choice[int], member: discord.Member, amount: int):
     value = abs(amount)
     if choice.value == 0:
-        store_user_data(interaction.guild.id, member.id, value)
-        await interaction.response.send_message(f'{interaction.user.mention} awarded {member.mention} {value} player point(s)! They now have {get_user_data(interaction.guild.id, member.id)} player points.')    
+        functions.store_user_data(interaction.guild.id, member.id, value)
+        await interaction.response.send_message(f'{interaction.user.mention} awarded {member.mention} {value} player point(s)! They now have {functions.get_user_data(interaction.guild.id, member.id)} player points.')    
     else:
-        store_user_data(interaction.guild.id, member.id, -value)
-        await interaction.response.send_message(f'{interaction.user.mention} removed {value} player point(s) from {member.mention}. They now have {get_user_data(interaction.guild.id, member.id)} player points.')     
+        functions.store_user_data(interaction.guild.id, member.id, -value)
+        await interaction.response.send_message(f'{interaction.user.mention} removed {value} player point(s) from {member.mention}. They now have {functions.get_user_data(interaction.guild.id, member.id)} player points.')     
 
 #check player points
 @bot.tree.command(name='check_points', description='check player points')
 async def check_points(interaction: discord.Interaction):
-    points = get_user_data(interaction.guild.id, interaction.user.id)
+    points = functions.get_user_data(interaction.guild.id, interaction.user.id)
     await interaction.response.send_message(f'You have {points} player points.', ephemeral=True)
 
 #player point leaderboard
@@ -69,7 +67,7 @@ async def check_points(interaction: discord.Interaction):
 async def leaderboard(interaction: discord.Interaction):
     em = discord.Embed(title = 'Player Point Leaderboard')
     count = 0
-    board = get_leaderboard(interaction.guild.id)
+    board = functions.get_leaderboard(interaction.guild.id)
     for i in board:
         count += 1
         user = await bot.fetch_user(i)
@@ -84,7 +82,7 @@ async def leaderboard(interaction: discord.Interaction):
 @bot.tree.command(name="generate", description='generate teams')
 async def teams(interaction: discord.Interaction):
     #get names
-    file = check_txt_file(interaction, interaction.guild.id)
+    file = functions.check_txt_file(interaction, interaction.guild.id)
     names = file.read().split('\n')
     names.pop()
 
@@ -94,11 +92,11 @@ async def teams(interaction: discord.Interaction):
     team2 = names[len(names)//2:]
     await interaction.response.send_message(f"Team 1: {', '.join(team1)}\nTeam 2: {', '.join(team2)}")
 
-#player_list
+#get player list
 @bot.tree.command(name="playerlist", description='get list of players')
 async def list(interaction: discord.Interaction):
     #initialize vars
-    file = check_txt_file(interaction, interaction.guild.id)
+    file = functions.check_txt_file(interaction, interaction.guild.id)
     names = file.read().split('\n')
 
     #create embed
@@ -106,15 +104,22 @@ async def list(interaction: discord.Interaction):
     em = discord.Embed(title = 'Player List')
     for i in range(len(names)-1):
         count += 1
-        em.add_field(value = (f'{count}. {names[i]}'), name="\u200b", inline=False)
+        em.add_field(name = (f'{count}. {names[i]}'), value=(f"Rating: "), inline=False)
     
     await interaction.response.send_message(embed = em)
+
+#clear list
+@bot.tree.command(name="clear_list", description='clear list of players')
+async def clear(interaction: discord.Interaction):
+    functions.check_txt_file(interaction, interaction.guild.id)
+    open(f'data\\{interaction.guild.id}_names.txt', 'w', encoding="utf8")
+    await interaction.response.send_message(f"Player list cleared")
 
 #add player
 @bot.tree.command(name="add_player", description='generate teams')
 async def add(interaction: discord.Interaction, member: discord.Member):
     #initialize vars
-    file =check_txt_file(interaction, interaction.guild.id)
+    file = functions.check_txt_file(interaction, interaction.guild.id)
     names = file.read().split('\n')
 
     #check if member in list
@@ -130,7 +135,7 @@ async def add(interaction: discord.Interaction, member: discord.Member):
 @bot.tree.command(name="remove_player", description='generate teams')
 async def remove(interaction: discord.Interaction, member: discord.Member):
     #initalize vars
-    file = check_txt_file(interaction, interaction.guild.id)
+    file = functions.check_txt_file(interaction, interaction.guild.id)
     names = file.read().split('\n')
 
     #check if member in list
