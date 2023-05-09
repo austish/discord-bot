@@ -1,3 +1,6 @@
+"""
+Linux files use / instead of '\'
+"""
 import random, json, os
 import numpy as np
 import discord
@@ -37,8 +40,8 @@ def rps(user_input: str) -> str:
 
 #check if json file exists
 def check_json_file(id):
-    if not os.path.exists(f"data\\{id}.json"):
-        with open((f'data\\{id}.json'), 'w') as f:
+    if not os.path.exists(f"data\{id}.json"):
+        with open((f'data\{id}.json'), 'w') as f:
             json.dump({}, f)
         print (f'{id}.json created')
 
@@ -48,7 +51,7 @@ def store_user_data(server_id, user_id, data):
     check_json_file(server_id)
 
     #read file content
-    with open(f'data\\{server_id}.json') as f:
+    with open(f'data\{server_id}.json') as f:
         user_data = json.load(f)            #store file into dict
 
     #check if user in json file
@@ -59,7 +62,7 @@ def store_user_data(server_id, user_id, data):
     user_data[str(user_id)] += data 
 
     #write to json file
-    with open((f'data\\{server_id}.json'), 'w') as f:
+    with open((f'data\{server_id}.json'), 'w') as f:
         f.seek(0)
         json.dump(user_data, f)
         f.truncate()
@@ -70,7 +73,7 @@ def get_user_data(server_id, user_id):
     check_json_file(server_id)
 
     #read file content
-    with open(f'data\\{server_id}.json') as f:
+    with open(f'data\{server_id}.json') as f:
         user_data = json.load(f)
 
     #return data
@@ -85,7 +88,7 @@ def get_leaderboard(server_id):
     check_json_file(server_id)
 
     #get sorted dict
-    with open((f'data\\{server_id}.json')) as f:
+    with open((f'data\{server_id}.json')) as f:
         user_data = json.load(f)
     
     keys = list(user_data.keys())
@@ -99,7 +102,7 @@ def get_leaderboard(server_id):
 
 #helper function to create text file with names of members
 def create_file(interact, id):
-    file = open(f'data\\{id}_names.txt', 'w', encoding="utf8")
+    file = open(f'data\{id}_names.txt', 'w', encoding="utf8")
     for member in interact.guild.members:
         if not member.bot:
             file.write(f'{member.name}\n')
@@ -107,9 +110,9 @@ def create_file(interact, id):
 
 #check if name file exists, create it if not, add all names, and return file as read mode
 def check_txt_file(interact: discord.Interaction, server_id):
-    path = f"data\\{server_id}_names.txt"
+    path = f"data\{server_id}_names.txt"
     if not os.path.exists(path):
         create_file(interact, server_id)
     elif os.stat(path).st_size == 0:
         create_file(interact, server_id)
-    return open(f'data\\{server_id}_names.txt', encoding="utf8")
+    return open(f'data\{server_id}_names.txt', encoding="utf8")

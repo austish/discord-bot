@@ -7,8 +7,8 @@ import functions
 import tokens
 
 bot = commands.Bot(command_prefix = '!', intents = discord.Intents.all())
-TOKEN = tokens.token
-# TOKEN = tokens.test_toekn
+# TOKEN = tokens.token
+TOKEN = tokens.test_token
 
 @bot.event
 async def on_ready():           #on startup
