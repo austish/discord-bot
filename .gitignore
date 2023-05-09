@@ -1,3 +1,4 @@
 data/
 tokens.py
 functions_testing.py
+.gitignore
