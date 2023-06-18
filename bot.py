@@ -8,7 +8,7 @@ import tokens
 
 bot = commands.Bot(command_prefix = '!', intents = discord.Intents.all())
 # TOKEN = tokens.token
-TOKEN = tokens.test_token
+TOKEN = tokens.token
 
 @bot.event
 async def on_ready():           #on startup
@@ -23,19 +23,7 @@ async def on_ready():           #on startup
 @bot.tree.command(name='hello', description='Say hello to the bot')                             #define bot command
 async def hello(interaction: discord.Interaction):                                              #define python command
     await interaction.response.send_message(f'hello {interaction.user.mention}')                #return python function
-
-#rps command
-# @bot.tree.command(name='rps', description='Play rock, paper, scissors with the bot')
-# @app_commands.describe(choice = 'rock, paper, or scissors')
-# @app_commands.choices(choice = [
-#     discord.app_commands.Choice(name = 'Rock', value = 1),
-#     discord.app_commands.Choice(name = 'Paper', value = 2),
-#     discord.app_commands.Choice(name = 'Scissors', value = 3),
-# ])
-# async def r_p_s(interaction: discord.Interaction, choice: discord.app_commands.Choice[int]):    
-#     result = f'You selected: `{choice.name}` \n{functions.rps(choice.name.lower())}'
-#     await interaction.response.send_message(result)                                             
-
+                                       
 ########################
 ###  PLAYER POINTS  ###
 ########################
