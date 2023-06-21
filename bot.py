@@ -1,6 +1,5 @@
 import discord
 import random
-from discord import app_commands
 from discord.ext import commands
 
 import functions
@@ -29,7 +28,7 @@ async def hello(interaction: discord.Interaction):                              
 
 #award/remove player points
 @bot.tree.command(name='playerpoint', description='Give player points')
-async def test(interaction: discord.Interaction, *, member: discord.Member, amount: int):
+async def test(interaction: discord.Interaction, *, member: discord.Member, amount: float):
     functions.store_user_data(interaction.guild.id, member.id, amount)
     await interaction.response.send_message(f'{interaction.user.mention} gave {member.mention} {amount} player point(s)! They now have {functions.get_user_data(interaction.guild.id, member.id)} player points.')    
     
