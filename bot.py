@@ -7,7 +7,6 @@ import functions
 import tokens
 
 bot = commands.Bot(command_prefix = '!', intents = discord.Intents.all())
-# TOKEN = tokens.token
 TOKEN = tokens.token
 
 @bot.event
@@ -100,7 +99,7 @@ async def list(interaction: discord.Interaction):
 @bot.tree.command(name="clear_list", description='clear list of players')
 async def clear(interaction: discord.Interaction):
     functions.check_txt_file(interaction, interaction.guild.id)
-    open(f'data\\{interaction.guild.id}_names.txt', 'w', encoding="utf8")
+    open(f'data//{interaction.guild.id}_names.txt', 'w', encoding="utf8")
     await interaction.response.send_message(f"Player list cleared")
 
 #add player
@@ -115,7 +114,7 @@ async def add(interaction: discord.Interaction, member: discord.Member):
         await interaction.response.send_message(f"{member.name} already in list")
     else:
         file.close()
-        file = open(f'data\\{interaction.guild.id}_names.txt', 'a', encoding="utf8")       #reopen file to append
+        file = open(f'data//{interaction.guild.id}_names.txt', 'a', encoding="utf8")       #reopen file to append
         file.write(f'{member.name}\n')                                                      #append new member
         await interaction.response.send_message(f"{member.name} added")
 
@@ -129,9 +128,9 @@ async def remove(interaction: discord.Interaction, member: discord.Member):
     #check if member in list
     if member.name in names:
         #rewrite file, but do not include removed member
-        with open(f"data\\{interaction.guild.id}_names.txt", "r", encoding="utf8") as f:
+        with open(f"data//{interaction.guild.id}_names.txt", "r", encoding="utf8") as f:
             lines = f.readlines()
-        with open(f"data\\{interaction.guild.id}_names.txt", "w", encoding="utf8") as f:
+        with open(f"data//{interaction.guild.id}_names.txt", "w", encoding="utf8") as f:
             for line in lines:
                 if line.strip("\n") != member.name:
                     f.write(line)
