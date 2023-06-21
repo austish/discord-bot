@@ -28,21 +28,11 @@ async def hello(interaction: discord.Interaction):                              
 ########################
 
 #award/remove player points
-@bot.tree.command(name='playerpoint', description='Award/remove player points')
-@app_commands.describe(choice = 'reward or penalize')
-@app_commands.choices(choice = [
-    discord.app_commands.Choice(name = 'Award', value = 0),
-    discord.app_commands.Choice(name = 'Remove', value = 1)
-])
-async def test(interaction: discord.Interaction, *, choice: discord.app_commands.Choice[int], member: discord.Member, amount: int):
-    value = abs(amount)
-    if choice.value == 0:
-        functions.store_user_data(interaction.guild.id, member.id, value)
-        await interaction.response.send_message(f'{interaction.user.mention} awarded {member.mention} {value} player point(s)! They now have {functions.get_user_data(interaction.guild.id, member.id)} player points.')    
-    else:
-        functions.store_user_data(interaction.guild.id, member.id, -value)
-        await interaction.response.send_message(f'{interaction.user.mention} removed {value} player point(s) from {member.mention}. They now have {functions.get_user_data(interaction.guild.id, member.id)} player points.')     
-
+@bot.tree.command(name='playerpoint', description='Give player points')
+async def test(interaction: discord.Interaction, *, member: discord.Member, amount: int):
+    functions.store_user_data(interaction.guild.id, member.id, amount)
+    await interaction.response.send_message(f'{interaction.user.mention} gave {member.mention} {amount} player point(s)! They now have {functions.get_user_data(interaction.guild.id, member.id)} player points.')    
+    
 #check player points
 @bot.tree.command(name='check_points', description='check player points')
 async def check_points(interaction: discord.Interaction):
