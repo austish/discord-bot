@@ -67,15 +67,16 @@ def get_leaderboard(server_id):
  
     return sorted_dict
 
-###  TEAM GENERATOR  ###
+###  PLAYER LIST  ###
 
 #helper function to create text file with names of members
-def create_file(interact, id):
-    file = open(f'data/{id}_names.txt', 'w', encoding="utf8")
+def create_file(interact, server_id):
+    file = open(f'data/{server_id}_names.txt', 'w', encoding="utf8")
     for member in interact.guild.members:
         if not member.bot:
             file.write(f'{member.name}\n')
     file.truncate()
+    return open(f'data/{server_id}_names.txt', encoding="utf8")
 
 #check if name file exists, create it if not, and return file as read mode
 def check_txt_file(interact: discord.Interaction, server_id):

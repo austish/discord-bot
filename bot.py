@@ -34,27 +34,28 @@ async def hello(interaction: discord.Interaction):                              
 @bot.tree.command(name='help', description='get help')               
 async def help(interaction: discord.Interaction):
     message = ""
-    message += ":white_check_mark:**PLAYER POINTS:**\n"
-    message += "`/playerpoint` Give player points\n"
-    message += "`/check_points` Check your player points\n"
-    message += "`/leaderboard` View leaderboard\n\n"
-    
-    message += ":basketball_player:**PLAYER LIST:**\n"
-    message += "`/view` View player list\n"
-    message += "`/add` Add player to list\n"
-    message += "`/remove` Remove player from list\n"
-    message += "`/clear` Clear player list\n\n"
-    
-    # embed = discord.Embed(title = '```Commands```', description='Player points and team generator', color=0x3aa1e8)
+    message += ":white_check_mark: **PLAYER POINTS:**\n"
+    message += "   `/playerpoint` Give player points\n"
+    message += "   `/check_points` Check your player points\n"
+    message += "   `/leaderboard` View leaderboard\n\n"
 
-    # embed.add_field(name='```Team Generator:```', value='', inline=False)
-    # embed.add_field(name='/add', value='add player to list', inline=True)
-    # embed.add_field(name='/remove', value='remove player from list', inline=True)
-    # embed.add_field(name='/view', value='view player list', inline=True)
-    # embed.add_field(name='/clear', value='clears player list', inline=True)
-    # embed.add_field(name='/generate', value='generates teams', inline=True)
+    message += ":arrows_counterclockwise: **RANDOMIZERS:**\n"
+    message += "   `/random number (num)` Gives random integer between 0 and given (num)\n"
+    message += "   `/random user` Gives random user\n\n"
+
+    message += ":1234: **TEAM GENERATOR:**\n"
+    message += "   `/generate (amount)` Generate (amount) number of teams\n"
+    
+    message += "   > /random user and /generate pulls users from player list below\n\n"
+
+    message += ":notepad_spiral: **PLAYER LIST:**\n"
+    message += "   `/list view` View player list\n"
+    message += "   `/list add` Add player to list\n"
+    message += "   `/list remove` Remove player from list\n"
+    message += "   `/list clear` Clear player list\n"
+    message += "   `/list fill` Fill player list\n\n"
+
     await interaction.response.send_message(message)
-
 
 ###########################
 ###  RANDOM GENERATORS  ###
@@ -62,8 +63,8 @@ async def help(interaction: discord.Interaction):
 
 #random number generator
 @randomGroup.command(name='number', description="get random number between 0 and given number")
-async def random_num(interaction: discord.Interaction, number: int):
-    num = random.randrange(0,number)
+async def random_num(interaction: discord.Interaction, num: int):
+    num = random.randrange(0,num)
     await interaction.response.send_message(num)    
 
 #random user generator
@@ -98,6 +99,8 @@ async def leaderboard(interaction: discord.Interaction):
     em = discord.Embed(title = "Player Point Leaderboard")
     count = 0
     board = functions.get_leaderboard(interaction.guild.id)
+    
+    #create embed
     for i in board:
         count += 1
         user = await bot.fetch_user(i)
@@ -142,21 +145,32 @@ async def teams(interaction: discord.Interaction, amount: int):
 ###  PLAYER LIST  ###
 #####################
 
+#helper func to create player list embed
+def display_list(names):
+    #create embed
+    em = discord.Embed(title = "Player List")
+    for i in range(len(names)-1):
+        em.add_field(name = (f'{i+1}. {names[i]}'), value='', inline=False)
+    
+    return em
+
 #get player list
 @playerListGroup.command(name='view', description="view list of players")
 async def view(interaction: discord.Interaction):
     #initialize vars
     file = functions.check_txt_file(interaction, interaction.guild.id)
     names = file.read().split('\n')
-
-    #create embed
-    count = 0
-    em = discord.Embed(title = "Player List")
-    for i in range(len(names)-1):
-        count += 1
-        em.add_field(name = (f'{count}. {names[i]}'), value='', inline=False)
     
-    await interaction.response.send_message(embed = em)
+    await interaction.response.send_message(embed = display_list(names))
+
+#fill player list
+@playerListGroup.command(name='fill', description="fill list of players")
+async def fill(interaction: discord.Interaction):
+    #initialize vars
+    file = functions.create_file(interaction, interaction.guild.id)
+    names = file.read().split('\n')
+    
+    await interaction.response.send_message(embed = display_list(names))    
 
 #clear list
 @playerListGroup.command(name='clear', description="clear list of players")
@@ -178,7 +192,7 @@ async def add(interaction: discord.Interaction, member: discord.Member):
     else:
         file.close()
         file = open(f'data//{interaction.guild.id}_names.txt', 'a', encoding='utf8')       #reopen file to append
-        file.write(f'{member.name}\n')                                                      #append new member
+        file.write(f'{member.name}\n')                                                     #append new member
         await interaction.response.send_message(f"{member.name} added")
 
 #remove player
