@@ -5,7 +5,7 @@ from discord.ext import commands
 import functions
 import tokens
 
-bot = commands.Bot(command_prefix = '!', intents = discord.Intents.all())
+bot = commands.Bot(command_prefix = '!', intents = discord.Intents.all(), help_command=commands.DefaultHelpCommand())
 TOKEN = tokens.token
 
 @bot.event
@@ -20,7 +20,23 @@ async def on_ready():           #on startup
 #hello command
 @bot.tree.command(name='hello', description='Say hello to the bot')                             #define bot command
 async def hello(interaction: discord.Interaction):                                              #define python command
-    await interaction.response.send_message(f'hello {interaction.user.mention}')                #return python function
+    await interaction.response.send_message(f'hello {interaction.user.mention}', ephemeral=True)                #return python function
+
+@bot.tree.command(name='help', description='get help')               
+async def help(interaction: discord.Interaction):
+    embed = discord.Embed(title = "```Commands```", description=" Player points and team generator", color=0x3aa1e8)
+    embed.add_field(name="```Player Points:```", value="", inline=False)
+    embed.add_field(name="/playerpoint", value="give player points", inline=True)
+    embed.add_field(name="/checkpoints", value="check your points", inline=True)
+    embed.add_field(name="/leaderboard", value="displays leaderboard", inline=True)
+    embed.add_field(name="```Team Generator:```", value="", inline=False)
+    embed.add_field(name="/add_player", value="add player to list", inline=True)
+    embed.add_field(name="/remove_player", value="remove player from list", inline=True)
+    embed.add_field(name="/player_list", value="check player list", inline=True)
+    embed.add_field(name="/clear_list", value="clears player list", inline=True)
+    embed.add_field(name="/generate", value="generates teams", inline=True)
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+
                                        
 ########################
 ###  PLAYER POINTS  ###
@@ -69,7 +85,7 @@ async def teams(interaction: discord.Interaction):
     await interaction.response.send_message(f"Team 1: {', '.join(team1)}\nTeam 2: {', '.join(team2)}")
 
 #get player list
-@bot.tree.command(name="playerlist", description='get list of players')
+@bot.tree.command(name="player_list", description='get list of players')
 async def list(interaction: discord.Interaction):
     #initialize vars
     file = functions.check_txt_file(interaction, interaction.guild.id)
