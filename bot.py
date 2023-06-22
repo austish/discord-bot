@@ -38,7 +38,22 @@ async def help(interaction: discord.Interaction):
     embed.add_field(name="/generate", value="generates teams", inline=True)
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
-                                       
+#random number generator
+@bot.tree.command(name='random_number', description='get random number between 0 and given number')
+async def random_num(interaction: discord.Interaction, number: int):
+    num = random.randrange(0,number)
+    await interaction.response.send_message(num)    
+
+#random user generator
+@bot.tree.command(name='random_user', description='get random user')
+async def random_user(interaction: discord.Interaction):
+    file = functions.check_txt_file(interaction, interaction.guild.id)
+    names = file.read().split('\n')
+    names.pop()
+
+    user = random.choice(names)
+    await interaction.response.send_message(user) 
+
 ########################
 ###  PLAYER POINTS  ###
 ########################
@@ -70,6 +85,8 @@ async def leaderboard(interaction: discord.Interaction):
 ########################
 ###  TEAM GENERATOR  ###
 ########################
+
+# team_generator = bot.create_group("team_generator", "generate teams")
 
 #generate teams
 @bot.tree.command(name="generate", description='generate teams')
