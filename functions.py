@@ -80,6 +80,6 @@ def create_file(interact, id):
 #check if name file exists, create it if not, and return file as read mode
 def check_txt_file(interact: discord.Interaction, server_id):
     path = f"data/{server_id}_names.txt"
-    if not os.path.exists(path) or os.stat(path).st_size == 0:
+    if not os.path.exists(path):
         create_file(interact, server_id)
     return open(f'data/{server_id}_names.txt', encoding="utf8")
