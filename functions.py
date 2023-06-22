@@ -74,14 +74,12 @@ def create_file(interact, id):
     file = open(f'data/{id}_names.txt', 'w', encoding="utf8")
     for member in interact.guild.members:
         if not member.bot:
-            file.write(f'{member.name}/n')
+            file.write(f'{member.name}\n')
     file.truncate()
 
-#check if name file exists, create it if not, add all names, and return file as read mode
+#check if name file exists, create it if not, and return file as read mode
 def check_txt_file(interact: discord.Interaction, server_id):
     path = f"data/{server_id}_names.txt"
-    if not os.path.exists(path):
-        create_file(interact, server_id)
-    elif os.stat(path).st_size == 0:
+    if not os.path.exists(path) or os.stat(path).st_size == 0:
         create_file(interact, server_id)
     return open(f'data/{server_id}_names.txt', encoding="utf8")

@@ -1,5 +1,6 @@
 import discord
 import random
+from discord import app_commands
 from discord.ext import commands
 
 import functions
@@ -18,9 +19,9 @@ async def on_ready():           #on startup
         print(e)
 
 #hello command
-@bot.tree.command(name='hello', description='Say hello to the bot')                             #define bot command
-async def hello(interaction: discord.Interaction):                                              #define python command
-    await interaction.response.send_message(f'hello {interaction.user.mention}', ephemeral=True)                #return python function
+@bot.tree.command(name='hello', description='Say hello to the bot')                                 #define bot command
+async def hello(interaction: discord.Interaction):                                                  #define python command
+    await interaction.response.send_message(f'hello {interaction.user.mention}', ephemeral=True)    #return python function
 
 @bot.tree.command(name='help', description='get help')               
 async def help(interaction: discord.Interaction):
@@ -32,7 +33,7 @@ async def help(interaction: discord.Interaction):
     embed.add_field(name="```Team Generator:```", value="", inline=False)
     embed.add_field(name="/add_player", value="add player to list", inline=True)
     embed.add_field(name="/remove_player", value="remove player from list", inline=True)
-    embed.add_field(name="/player_list", value="check player list", inline=True)
+    embed.add_field(name="/list", value="check player list", inline=True)
     embed.add_field(name="/clear_list", value="clears player list", inline=True)
     embed.add_field(name="/generate", value="generates teams", inline=True)
     await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -72,7 +73,8 @@ async def leaderboard(interaction: discord.Interaction):
 
 #generate teams
 @bot.tree.command(name="generate", description='generate teams')
-async def teams(interaction: discord.Interaction):
+@app_commands.describe(amount = 'amount of teams')
+async def teams(interaction: discord.Interaction, amount: int):
     #get names
     file = functions.check_txt_file(interaction, interaction.guild.id)
     names = file.read().split('\n')
@@ -80,12 +82,27 @@ async def teams(interaction: discord.Interaction):
 
     #create teams
     random.shuffle(names)
-    team1 = names[:len(names)//2]
-    team2 = names[len(names)//2:]
-    await interaction.response.send_message(f"Team 1: {', '.join(team1)}\nTeam 2: {', '.join(team2)}")
+    teams = []
+    for i in range(amount):
+        teams.append([])
+    for count, name in enumerate(names):
+        teams[count%amount].append(name)
+
+    #create embed
+    em = discord.Embed(title = 'Teams')
+    for count, team in enumerate(teams):
+        message = ""
+        for person in team:
+            if person != team[-1]:
+                message += person + ", "
+            else:
+                message += person
+        em.add_field(name = f'Team {count+1}:', value = message)
+
+    await interaction.response.send_message(embed = em)
 
 #get player list
-@bot.tree.command(name="player_list", description='get list of players')
+@bot.tree.command(name="list", description='get list of players')
 async def list(interaction: discord.Interaction):
     #initialize vars
     file = functions.check_txt_file(interaction, interaction.guild.id)
@@ -96,7 +113,7 @@ async def list(interaction: discord.Interaction):
     em = discord.Embed(title = 'Player List')
     for i in range(len(names)-1):
         count += 1
-        em.add_field(name = (f'{count}. {names[i]}'), value=(f"Rating: "), inline=False)
+        em.add_field(name = (f'{count}. {names[i]}'), value="", inline=False)
     
     await interaction.response.send_message(embed = em)
 
