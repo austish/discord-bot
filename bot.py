@@ -166,9 +166,20 @@ async def view(interaction: discord.Interaction):
 @playerListGroup.command(name='fill', description="fill list of players")
 async def fill(interaction: discord.Interaction):
     #initialize vars
-    file = functions.create_file(interaction, interaction.guild.id)
+    file = functions.check_txt_file(interaction, interaction.guild.id)
     names = file.read().split('\n')
     
+    #open file for appending
+    file = open(f'data//{interaction.guild.id}_names.txt', 'a', encoding='utf8')
+    for member in interaction.guild.members:
+        if member not in names and not member.bot:
+            file.write(f'{member.name}\n')
+    file.truncate()
+
+    #read file again
+    file = functions.check_txt_file(interaction, interaction.guild.id)
+    names = file.read().split('\n')
+
     await interaction.response.send_message(embed = display_list(names))    
 
 #clear list

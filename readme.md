@@ -3,7 +3,6 @@ Discord bot that assists with games/events on servers. Give/remove points from u
 
 - Todo:
     - use sqlite3 database
-    - add only members not in list for fill
     - event command
     - vote command
 <br><br>

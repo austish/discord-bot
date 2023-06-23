@@ -4,6 +4,7 @@ Linux/Mac files use / instead of \
 import json, os
 import numpy as np
 import discord
+import sqlite3
 
 ###  PLAYER POINTS  ###
 
@@ -84,3 +85,61 @@ def check_txt_file(interact: discord.Interaction, server_id):
     if not os.path.exists(path):
         create_file(interact, server_id)
     return open(f'data/{server_id}_names.txt', encoding="utf8")
+
+### DATABASE ###
+
+def connect(server_id):
+    # try:
+    conn = sqlite3.connect("player_points.db")
+    cur = conn.cursor()
+    cur.execute(f"CREATE TABLE IF NOT EXISTS test (db_id INTEGER PRIMARY KEY, user_id int, points integer)")
+    conn.commit()
+    # except Exception as e:
+    #     print(e)
+    return conn
+
+#add points to user, create new entry if user does not exist
+def add_points(server_id, user_id, points):
+    #establish connection
+    conn = connect(server_id)
+    cur = conn.cursor()
+
+    #check if user exists
+    cur.execute(f"SELECT db_id FROM test WHERE user_id = {user_id}")
+    search = cur.fetchall()
+
+    #if user does not exist
+    if len(search) == 0:
+        #insert user and points
+        cur.execute(f"INSERT INTO test VALUES (NULL, ?, ?)", (user_id, points))
+    else:
+        #update user's points
+        cur.execute(f"UPDATE test SET points = {points} WHERE user_id = {user_id}")
+
+    conn.commit()
+    conn.close()
+
+#check user's points
+def check_points(server_id, user_id):
+    #establish connection
+    conn = connect(server_id)
+    cur = conn.cursor()
+
+    #check if user exists
+    cur.execute(f"SELECT db_id FROM test WHERE user_id = {user_id}")
+    search = cur.fetchall()
+    
+    #if user does not exist
+    if len(search) == 0:
+        #select user
+        cur.execute(f"SELECT points FROM test WHERE user_id = {user_id}")
+        search = cur.fetchall()
+        print(search)
+    else:
+        print("User has 0 points")
+    
+    conn.close()
+
+connect(333)
+add_points(333, 1, 1)
+check_points(333, 1)
