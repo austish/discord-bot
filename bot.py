@@ -3,7 +3,6 @@ import random
 from discord import app_commands
 from discord.ext import commands
 
-
 import functions
 import tokens
 
@@ -63,6 +62,7 @@ async def help(interaction: discord.Interaction):
 
 #random number generator
 @randomGroup.command(name='number', description="get random number between 0 and given number")
+@app_commands.describe(num = "maximum number")
 async def random_num(interaction: discord.Interaction, num: int):
     num = random.randrange(0,num)
     await interaction.response.send_message(num)    
@@ -81,7 +81,7 @@ async def random_user(interaction: discord.Interaction):
 ###  PLAYER POINTS  ###
 #######################
 
-#award/remove player points
+#award/remove player points    
 @bot.tree.command(name='playerpoint', description="give player points")
 async def test(interaction: discord.Interaction, *, member: discord.Member, amount: float):
     functions.store_user_data(interaction.guild.id, member.id, amount)
@@ -99,7 +99,7 @@ async def leaderboard(interaction: discord.Interaction):
     em = discord.Embed(title = "Player Point Leaderboard")
     count = 0
     board = functions.get_leaderboard(interaction.guild.id)
-    
+
     #create embed
     for i in board:
         count += 1
@@ -113,7 +113,7 @@ async def leaderboard(interaction: discord.Interaction):
 
 #generate teams
 @bot.tree.command(name='generate', description="generate teams")
-@app_commands.describe(amount = "amount of teams")
+@app_commands.describe(amount = "number of teams")
 async def teams(interaction: discord.Interaction, amount: int):
     #get names
     file = functions.check_txt_file(interaction, interaction.guild.id)
@@ -128,18 +128,17 @@ async def teams(interaction: discord.Interaction, amount: int):
     for count, name in enumerate(names):
         teams[count%amount].append(name)
 
-    #create embed
-    em = discord.Embed(title = 'Teams')
+    #create message
+    message = ""
     for count, team in enumerate(teams):
-        message = ''
+        message += "Team " + str(count+1) + ": "
         for person in team:
             if person != team[-1]:
-                message += person + ', '
+                message += person + ", "
             else:
-                message += person
-        em.add_field(name = f'Team {count+1}:', value = message)
-
-    await interaction.response.send_message(embed = em)
+                message += person + "\n"
+    
+    await interaction.response.send_message(message)
 
 #####################
 ###  PLAYER LIST  ###

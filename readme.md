@@ -1,8 +1,7 @@
 ## Description:
-Discord bot that assists with games/events on servers. Give/remove points from users, view the leaderboard, and generate teams.
+Discord bot that assists with games/events on servers. Give/remove points from users, view the leaderboard, generate teams, and select random users/numbers.
 
 - Todo:
-    - connect leaderboard to team generator to generate fair teams based on leaderboard/point ranking
 
 <br><br>
 
