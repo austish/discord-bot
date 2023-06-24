@@ -157,15 +157,18 @@ def display_list(names):
 @playerListGroup.command(name='view', description="view list of players")
 async def view(interaction: discord.Interaction):
     #initialize vars
-    file = functions.check_txt_file(interaction, interaction.guild.id)
-    names = file.read().split('\n')
+    # file = functions.check_txt_file(interaction, interaction.guild.id)
+    # names = file.read().split('\n')
     
+    # await interaction.response.send_message(embed = display_list(names))
+    names = functions.get_list(interaction.guild.id)
+
     await interaction.response.send_message(embed = display_list(names))
 
 #fill player list
 @playerListGroup.command(name='fill', description="fill list of players")
 async def fill(interaction: discord.Interaction):
-    #initialize vars
+    # initialize vars
     file = functions.check_txt_file(interaction, interaction.guild.id)
     names = file.read().split('\n')
     
@@ -185,44 +188,49 @@ async def fill(interaction: discord.Interaction):
 #clear list
 @playerListGroup.command(name='clear', description="clear list of players")
 async def clear(interaction: discord.Interaction):
-    functions.check_txt_file(interaction, interaction.guild.id)
-    open(f'data//{interaction.guild.id}_names.txt', 'w', encoding='utf8')
+    # functions.check_txt_file(interaction, interaction.guild.id)
+    # open(f'data//{interaction.guild.id}_names.txt', 'w', encoding='utf8')
+    functions.clear_list(interaction.guild.id)
     await interaction.response.send_message(f"Player list cleared")
 
 #add player
 @playerListGroup.command(name='add', description="add player to list")
 async def add(interaction: discord.Interaction, member: discord.Member):
     #initialize vars
-    file = functions.check_txt_file(interaction, interaction.guild.id)
-    names = file.read().split('\n')
+    # file = functions.check_txt_file(interaction, interaction.guild.id)
+    # names = file.read().split('\n')
 
-    #check if member in list
-    if member.name in names:
-        await interaction.response.send_message(f"{member.name} already in list")
-    else:
-        file.close()
-        file = open(f'data//{interaction.guild.id}_names.txt', 'a', encoding='utf8')       #reopen file to append
-        file.write(f'{member.name}\n')                                                     #append new member
-        await interaction.response.send_message(f"{member.name} added")
+    # #check if member in list
+    # if member.name in names:
+    #     await interaction.response.send_message(f"{member.name} already in list")
+    # else:
+    #     file.close()
+    #     file = open(f'data//{interaction.guild.id}_names.txt', 'a', encoding='utf8')       #reopen file to append
+    #     file.write(f'{member.name}\n')                                                     #append new member
+    #     await interaction.response.send_message(f"{member.name} added")
+    functions.add_player(interaction.guild.id, member.name)
+    await interaction.response.send_message(f"{member.name} added")
 
 #remove player
 @playerListGroup.command(name='remove', description="remove player from list")
 async def remove(interaction: discord.Interaction, member: discord.Member):
     #initalize vars
-    file = functions.check_txt_file(interaction, interaction.guild.id)
-    names = file.read().split('\n')
+    # file = functions.check_txt_file(interaction, interaction.guild.id)
+    # names = file.read().split('\n')
 
-    #check if member in list
-    if member.name in names:
-        #rewrite file, but do not include removed member
-        with open(f'data//{interaction.guild.id}_names.txt', 'r', encoding='utf8') as f:
-            lines = f.readlines()
-        with open(f'data//{interaction.guild.id}_names.txt', 'w', encoding='utf8') as f:
-            for line in lines:
-                if line.strip('\n') != member.name:
-                    f.write(line)
-        await interaction.response.send_message(f"{member.name} removed")
-    else:
-        await interaction.response.send_message(f"{member.name} not in list")
+    # #check if member in list
+    # if member.name in names:
+    #     #rewrite file, but do not include removed member
+    #     with open(f'data//{interaction.guild.id}_names.txt', 'r', encoding='utf8') as f:
+    #         lines = f.readlines()
+    #     with open(f'data//{interaction.guild.id}_names.txt', 'w', encoding='utf8') as f:
+    #         for line in lines:
+    #             if line.strip('\n') != member.name:
+    #                 f.write(line)
+    #     await interaction.response.send_message(f"{member.name} removed")
+    # else:
+    #     await interaction.response.send_message(f"{member.name} not in list")
+    functions.remove_player(interaction.guild.id, member.name)
+    await interaction.response.send_message(f"{member.name} removed")
 
 bot.run(TOKEN)

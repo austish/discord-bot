@@ -93,7 +93,7 @@ def connect(server_id):
     conn = sqlite3.connect(f"data/{server_id}.db")
     cur = conn.cursor()
     cur.execute(f"CREATE TABLE IF NOT EXISTS points_table (user_id integer, points integer)")
-    cur.execute(f"CREATE TABLE IF NOT EXISTS player_list (user_id integer)")
+    cur.execute(f"CREATE TABLE IF NOT EXISTS player_list (username text)")
     conn.commit()
     # except Exception as e:
     #     print(e)
@@ -186,13 +186,13 @@ def clear_list(server_id):
     conn.commit()
 
 #returns false if player already exists
-def add_player(server_id, user_id):
+def add_player(server_id, username):
     #establish connection
     conn = connect(server_id)
     cur = conn.cursor()
 
     #check if user exists
-    cur.execute(f"SELECT rowid FROM player_list WHERE user_id = {user_id}")
+    cur.execute(f"SELECT rowid FROM player_list WHERE username = {username}")
     search = cur.fetchall()
 
     # false is user is already in list
@@ -200,16 +200,16 @@ def add_player(server_id, user_id):
         return False
     else:
         # add user
-        cur.execute(f"INSERT INTO player_list VALUES (?)", (user_id,))
+        cur.execute(f"INSERT INTO player_list VALUES (?)", (f"{username}",))
         conn.commit()
         return True
 
 
-def remove_player(server_id, user_id):
+def remove_player(server_id, username):
     #establish connection
     conn = connect(server_id)
     cur = conn.cursor()
 
     #delete player
-    cur.execute(f"DELETE FROM player_list WHERE user_id = {user_id}")
+    cur.execute(f"DELETE FROM player_list WHERE username = {username}")
     conn.commit()
