@@ -90,13 +90,16 @@ def check_txt_file(interact: discord.Interaction, server_id):
 
 def connect(server_id):
     # try:
-    conn = sqlite3.connect("player_points.db")
+    conn = sqlite3.connect(f"data/{server_id}.db")
     cur = conn.cursor()
-    cur.execute(f"CREATE TABLE IF NOT EXISTS test (db_id INTEGER PRIMARY KEY, user_id int, points integer)")
+    cur.execute(f"CREATE TABLE IF NOT EXISTS points_table (user_id integer, points integer)")
+    cur.execute(f"CREATE TABLE IF NOT EXISTS player_list (user_id integer)")
     conn.commit()
     # except Exception as e:
     #     print(e)
     return conn
+
+### PLAYER POINTS ###
 
 #add points to user, create new entry if user does not exist
 def add_points(server_id, user_id, points):
@@ -105,41 +108,108 @@ def add_points(server_id, user_id, points):
     cur = conn.cursor()
 
     #check if user exists
-    cur.execute(f"SELECT db_id FROM test WHERE user_id = {user_id}")
+    cur.execute(f"SELECT rowid FROM points_table WHERE user_id = {user_id}")
     search = cur.fetchall()
 
     #if user does not exist
     if len(search) == 0:
         #insert user and points
-        cur.execute(f"INSERT INTO test VALUES (NULL, ?, ?)", (user_id, points))
+        cur.execute(f"INSERT INTO points_table VALUES (?, ?)", (user_id, points))
     else:
         #update user's points
-        cur.execute(f"UPDATE test SET points = {points} WHERE user_id = {user_id}")
+        total = check_points(server_id, user_id) + points
+        cur.execute(f"UPDATE points_table SET points = {total} WHERE user_id = {user_id}")
 
     conn.commit()
-    conn.close()
 
-#check user's points
 def check_points(server_id, user_id):
     #establish connection
     conn = connect(server_id)
     cur = conn.cursor()
 
     #check if user exists
-    cur.execute(f"SELECT db_id FROM test WHERE user_id = {user_id}")
+    cur.execute(f"SELECT rowid FROM points_table WHERE user_id = {user_id}")
     search = cur.fetchall()
-    
-    #if user does not exist
-    if len(search) == 0:
-        #select user
-        cur.execute(f"SELECT points FROM test WHERE user_id = {user_id}")
-        search = cur.fetchall()
-        print(search)
-    else:
-        print("User has 0 points")
-    
-    conn.close()
 
-connect(333)
-add_points(333, 1, 1)
-check_points(333, 1)
+    if len(search) == 0:
+        return 0
+    else:
+        #select user
+        cur.execute(f"SELECT points FROM points_table WHERE user_id = {user_id}")
+        search = cur.fetchall()
+        return search[0][0]
+
+def get_ldrboard(server_id):
+    #establish connection
+    conn = connect(server_id)
+    cur = conn.cursor()
+
+    #get all players
+    cur.execute("SELECT * FROM points_table")
+    search = cur.fetchall()
+
+    #create list
+    ldrboard = []
+    for row in search:
+        ldrboard.append(row)
+    ldrboard.sort(key=lambda a: a[1], reverse=True)
+
+    #convert list of tuples to list of only id numbers
+    ldrboard_list = list(map(lambda x: x[0], ldrboard))
+
+    return ldrboard_list
+
+### PLAYER LIST ###
+
+def get_list(server_id):
+    #establish connection
+    conn = connect(server_id)
+    cur = conn.cursor()
+
+    #search for all players in list
+    cur.execute("SELECT * FROM player_list")
+    search = cur.fetchall()
+
+    final = []
+    for row in search:
+        final.append(row[0])
+    
+    return final
+
+def clear_list(server_id):
+    #establish connection
+    conn = connect(server_id)
+    cur = conn.cursor()
+
+    #delete all rows
+    cur.execute("DELETE FROM player_list")
+    conn.commit()
+
+#returns false if player already exists
+def add_player(server_id, user_id):
+    #establish connection
+    conn = connect(server_id)
+    cur = conn.cursor()
+
+    #check if user exists
+    cur.execute(f"SELECT rowid FROM player_list WHERE user_id = {user_id}")
+    search = cur.fetchall()
+
+    # false is user is already in list
+    if len(search) == 1:
+        return False
+    else:
+        # add user
+        cur.execute(f"INSERT INTO player_list VALUES (?)", (user_id,))
+        conn.commit()
+        return True
+
+
+def remove_player(server_id, user_id):
+    #establish connection
+    conn = connect(server_id)
+    cur = conn.cursor()
+
+    #delete player
+    cur.execute(f"DELETE FROM player_list WHERE user_id = {user_id}")
+    conn.commit()
