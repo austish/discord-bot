@@ -4,11 +4,3 @@ Discord bot that assists with games/events on servers. Give/remove points from u
 - Todo:
     - integrate sqlite3 database to player points
 <br><br>
-
-- Partly implemented:
-
-<br><br>
-
-- Bugs:
-
-<br><br>

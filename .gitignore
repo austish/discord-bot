@@ -1,3 +1,4 @@
 data/
 tokens.py
-.gitignore
+.gitignore'
+__pycache__/
