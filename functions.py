@@ -1,6 +1,3 @@
-"""
-Linux/Mac files use / instead of \
-"""
 import json, os
 import numpy as np
 import discord
@@ -68,35 +65,14 @@ def get_leaderboard(server_id):
  
     return sorted_dict
 
-###  PLAYER LIST  ###
-
-#helper function to create text file with names of members
-def create_file(interact, server_id):
-    file = open(f'data/{server_id}_names.txt', 'w', encoding="utf8")
-    for member in interact.guild.members:
-        if not member.bot:
-            file.write(f'{member.name}\n')
-    file.truncate()
-    return open(f'data/{server_id}_names.txt', encoding="utf8")
-
-#check if name file exists, create it if not, and return file as read mode
-def check_txt_file(interact: discord.Interaction, server_id):
-    path = f"data/{server_id}_names.txt"
-    if not os.path.exists(path):
-        create_file(interact, server_id)
-    return open(f'data/{server_id}_names.txt', encoding="utf8")
-
 ### DATABASE ###
 
 def connect(server_id):
-    # try:
     conn = sqlite3.connect(f"data/{server_id}.db")
     cur = conn.cursor()
     cur.execute(f"CREATE TABLE IF NOT EXISTS points_table (user_id integer, points integer)")
     cur.execute(f"CREATE TABLE IF NOT EXISTS player_list (username text)")
     conn.commit()
-    # except Exception as e:
-    #     print(e)
     return conn
 
 ### PLAYER POINTS ###
@@ -128,14 +104,14 @@ def check_points(server_id, user_id):
     cur = conn.cursor()
 
     #check if user exists
-    cur.execute(f"SELECT rowid FROM points_table WHERE user_id = {user_id}")
+    cur.execute(f"SELECT rowid FROM points_table WHERE user_id = ?", (user_id,))
     search = cur.fetchall()
 
     if len(search) == 0:
         return 0
     else:
         #select user
-        cur.execute(f"SELECT points FROM points_table WHERE user_id = {user_id}")
+        cur.execute(f"SELECT points FROM points_table WHERE user_id = ?", (user_id,))
         search = cur.fetchall()
         return search[0][0]
 
@@ -154,7 +130,7 @@ def get_ldrboard(server_id):
         ldrboard.append(row)
     ldrboard.sort(key=lambda a: a[1], reverse=True)
 
-    #convert list of tuples to list of only id numbers
+    #convert list of tuples to list of id integers
     ldrboard_list = list(map(lambda x: x[0], ldrboard))
 
     return ldrboard_list
@@ -170,6 +146,7 @@ def get_list(server_id):
     cur.execute("SELECT * FROM player_list")
     search = cur.fetchall()
 
+    #create list
     final = []
     for row in search:
         final.append(row[0])
@@ -185,6 +162,21 @@ def clear_list(server_id):
     cur.execute("DELETE FROM player_list")
     conn.commit()
 
+#fills list with all players, returning a list of names
+def fill_list(interaction: discord.Interaction):
+    #establish connection
+    conn = connect(interaction.guild.id)
+    cur = conn.cursor()
+
+    #fill list
+    names = get_list(interaction.guild.id)
+    for member in interaction.guild.members:
+        if member not in names and not member.bot:
+            add_player(interaction.guild.id, member.name)
+
+    names = get_list(interaction.guild.id)
+    return names
+
 #returns false if player already exists
 def add_player(server_id, username):
     #establish connection
@@ -192,15 +184,14 @@ def add_player(server_id, username):
     cur = conn.cursor()
 
     #check if user exists
-    cur.execute(f"SELECT rowid FROM player_list WHERE username = {username}")
+    cur.execute("SELECT rowid FROM player_list WHERE username = ?", (username,))
     search = cur.fetchall()
 
-    # false is user is already in list
     if len(search) == 1:
         return False
     else:
         # add user
-        cur.execute(f"INSERT INTO player_list VALUES (?)", (f"{username}",))
+        cur.execute(f"INSERT INTO player_list VALUES (?)", (username,))
         conn.commit()
         return True
 
@@ -211,5 +202,5 @@ def remove_player(server_id, username):
     cur = conn.cursor()
 
     #delete player
-    cur.execute(f"DELETE FROM player_list WHERE username = {username}")
+    cur.execute(f"DELETE FROM player_list WHERE username = ?", (username,))
     conn.commit()
