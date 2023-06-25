@@ -61,19 +61,18 @@ async def help(interaction: discord.Interaction):
 ###########################
 
 #random number generator
-@randomGroup.command(name='number', description="get random number between 0 and given number")
+@randomGroup.command(name='number', description="get random number between 0 and given number, including given number")
 @app_commands.describe(num = "maximum number")
 async def random_num(interaction: discord.Interaction, num: int):
-    num = random.randrange(0,num)
+    num = random.randrange(0,num+1)
     await interaction.response.send_message(num)    
 
 #random user generator
 @randomGroup.command(name='user', description="get random user from Player List")
 async def random_user(interaction: discord.Interaction):
-    file = functions.check_txt_file(interaction, interaction.guild.id)
-    names = file.read().split('\n')
-    names.pop()
-
+    #get names
+    names = functions.get_list(interaction.guild.id)
+    #choose random name
     user = random.choice(names)
     await interaction.response.send_message(user) 
 
@@ -116,9 +115,7 @@ async def leaderboard(interaction: discord.Interaction):
 @app_commands.describe(amount = "number of teams")
 async def teams(interaction: discord.Interaction, amount: int):
     #get names
-    file = functions.check_txt_file(interaction, interaction.guild.id)
-    names = file.read().split('\n')
-    names.pop()
+    names = functions.get_list(interaction.guild.id)
 
     #create teams
     random.shuffle(names)
@@ -168,21 +165,19 @@ async def fill(interaction: discord.Interaction):
 #clear list
 @playerListGroup.command(name='clear', description="clear list of players")
 async def clear(interaction: discord.Interaction):
-    functions.clear_list(interaction.guild.id)
-    await interaction.response.send_message(f"Player list cleared")
+    names = functions.clear_list(interaction.guild.id)
+    await interaction.response.send_message(embed = display_list(names))
 
 #add player
 @playerListGroup.command(name='add', description="add player to list")
 async def add(interaction: discord.Interaction, member: discord.Member):
-    if functions.add_player(interaction.guild.id, member.name):
-        await interaction.response.send_message(f"{member.name} added")
-    else:
-        await interaction.response.send_message(f"{member.name} already added")
+    names = functions.add_player(interaction.guild.id, member.name)
+    await interaction.response.send_message(embed = display_list(names))
 
 #remove player
 @playerListGroup.command(name='remove', description="remove player from list")
 async def remove(interaction: discord.Interaction, member: discord.Member):
-    functions.remove_player(interaction.guild.id, member.name)
-    await interaction.response.send_message(f"{member.name} removed")
+    names = functions.remove_player(interaction.guild.id, member.name)
+    await interaction.response.send_message(embed = display_list(names))
 
 bot.run(TOKEN)

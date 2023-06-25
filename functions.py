@@ -2,6 +2,7 @@ import json, os
 import numpy as np
 import discord
 import sqlite3
+import random
 
 ###  PLAYER POINTS  ###
 
@@ -106,7 +107,6 @@ def check_points(server_id, user_id):
     #check if user exists
     cur.execute(f"SELECT rowid FROM points_table WHERE user_id = ?", (user_id,))
     search = cur.fetchall()
-
     if len(search) == 0:
         return 0
     else:
@@ -147,11 +147,11 @@ def get_list(server_id):
     search = cur.fetchall()
 
     #create list
-    final = []
+    names = []
     for row in search:
-        final.append(row[0])
+        names.append(row[0])
     
-    return final
+    return names
 
 def clear_list(server_id):
     #establish connection
@@ -162,20 +162,18 @@ def clear_list(server_id):
     cur.execute("DELETE FROM player_list")
     conn.commit()
 
+    return get_list(server_id)
+
 #fills list with all players, returning a list of names
 def fill_list(interaction: discord.Interaction):
-    #establish connection
-    conn = connect(interaction.guild.id)
-    cur = conn.cursor()
-
-    #fill list
+    #get names
     names = get_list(interaction.guild.id)
     for member in interaction.guild.members:
+        #add names that arent already in
         if member not in names and not member.bot:
             add_player(interaction.guild.id, member.name)
 
-    names = get_list(interaction.guild.id)
-    return names
+    return get_list(interaction.guild.id)
 
 #returns false if player already exists
 def add_player(server_id, username):
@@ -187,13 +185,12 @@ def add_player(server_id, username):
     cur.execute("SELECT rowid FROM player_list WHERE username = ?", (username,))
     search = cur.fetchall()
 
-    if len(search) == 1:
-        return False
-    else:
+    if len(search) != 1:
         # add user
         cur.execute(f"INSERT INTO player_list VALUES (?)", (username,))
         conn.commit()
-        return True
+    
+    return get_list(server_id)
 
 
 def remove_player(server_id, username):
@@ -204,3 +201,8 @@ def remove_player(server_id, username):
     #delete player
     cur.execute(f"DELETE FROM player_list WHERE username = ?", (username,))
     conn.commit()
+
+    return get_list(server_id)
+
+for i in range(5):
+    print(random.randrange(0,2))
