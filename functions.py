@@ -1,6 +1,5 @@
 import discord
 import sqlite3
-import random
 
 ### DATABASE ###
 
