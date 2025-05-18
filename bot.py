@@ -177,4 +177,28 @@ def display_list(names):
         em.add_field(name = (f'{i+1}. {names[i]}'), value='', inline=False)
     return em
 
+#####################
+###  PREDICTIONS  ###
+#####################
+
+@bot.tree.command(name='predict', description="Place a prediction for the top 3 positions")
+async def predict(interaction: discord.Interaction, first_place: discord.Member, second_place: discord.Member, third_place: discord.Member):
+    functions.add_prediction(interaction.guild.id, interaction.user.id, first_place.display_name, second_place.display_name, third_place.display_name)
+    await interaction.response.send_message(f"{interaction.user.mention} has placed a prediction: 1st - {first_place.display_name}, 2nd - {second_place.display_name}, 3rd - {third_place.display_name}")
+
+@bot.tree.command(name='predict_odds', description="Get the current odds for the first place prediction")
+async def predict_odds(interaction: discord.Interaction):
+    odds = functions.calculate_odds(interaction.guild.id)
+    if not odds:
+        await interaction.response.send_message("No predictions have been made yet.")
+        return
+
+    # Create an embed to display odds
+    em = discord.Embed(title="Current Odds for First Place")
+    for player, odd in odds.items():
+        em.add_field(name=player, value=f"Odds: {odd * 100}%", inline=False)
+
+    await interaction.response.send_message(embed=em)
+
+    
 bot.run(TOKEN)

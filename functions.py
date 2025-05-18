@@ -138,64 +138,44 @@ def remove_player(server_id, username):
 
     return get_list(server_id)
 
-### OLD PLAYER POINTS  ###
+### PREDICTIONS ###
 
-#check if json file exists
-# def check_json_file(id):
-#     if not os.path.exists(f"data/{id}.json"):
-#         with open((f'data/{id}.json'), 'w') as f:
-#             json.dump({}, f)
-#         print (f'{id}.json created')
-
-#edit data
-# def store_user_data(server_id, user_id, data):
-#     #check if file exists:
-#     check_json_file(server_id)
-
-#     #read file content
-#     with open(f'data/{server_id}.json') as f:
-#         user_data = json.load(f)            #store file into dict
-
-#     #check if user in json file
-#     if str(user_id) not in user_data:   
-#         user_data[str(user_id)] = 0
-
-#     #update data
-#     user_data[str(user_id)] += data 
-
-#     #write to json file
-#     with open((f'data/{server_id}.json'), 'w') as f:
-#         f.seek(0)
-#         json.dump(user_data, f)
-#         f.truncate()
-
-#returns user data
-# def get_user_data(server_id, user_id):
-#     #check if file exists:  
-#     check_json_file(server_id)
-
-#     #read file content
-#     with open(f'data/{server_id}.json') as f:
-#         user_data = json.load(f)
-
-#     #return data
-#     if str(user_id) in user_data:
-#         return user_data.get(str(user_id))
-#     else:
-#         return 0
-
-#returns sorted dict
-# def get_leaderboard(server_id):
-#     #check if file exists:  
-#     check_json_file(server_id)
-
-#     #get sorted dict
-#     with open((f'data/{server_id}.json')) as f:
-#         user_data = json.load(f)
+def add_prediction(server_id, user_id, first_place, second_place, third_place):
+    conn = connect(server_id)
+    cur = conn.cursor()
+    cur.execute(f"CREATE TABLE IF NOT EXISTS predictions (user_id integer, first_place text, second_place text, third_place text)")
     
-#     keys = list(user_data.keys())
-#     values = list(user_data.values())
-#     sorted_value_index = np.argsort(values)[::-1]
-#     sorted_dict = {keys[i]: values[i] for i in sorted_value_index}
- 
-#     return sorted_dict
+    # Check if prediction already exists for the user
+    cur.execute("SELECT rowid FROM predictions WHERE user_id = ?", (user_id,))
+    search = cur.fetchall()
+
+    if len(search) == 0:
+        # Insert new prediction
+        cur.execute("INSERT INTO predictions VALUES (?, ?, ?, ?)", (user_id, first_place, second_place, third_place))
+    else:
+        # Update existing prediction
+        cur.execute("UPDATE predictions SET first_place = ?, second_place = ?, third_place = ? WHERE user_id = ?", 
+                    (first_place, second_place, third_place, user_id))
+
+    conn.commit()
+
+def get_predictions(server_id):
+    conn = connect(server_id)
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM predictions")
+    predictions = cur.fetchall()
+    return predictions
+
+def calculate_odds(server_id):
+    predictions = get_predictions(server_id)
+    odds_count = {}
+    for _, first_place, _, _ in predictions:
+        if first_place in odds_count:
+            odds_count[first_place] += 1
+        else:
+            odds_count[first_place] = 1
+
+    # Convert counts to odds
+    total = sum(odds_count.values())
+    odds = {player: round(count / total, 2) for player, count in odds_count.items()}
+    return odds
