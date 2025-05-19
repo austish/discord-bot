@@ -168,14 +168,45 @@ def get_predictions(server_id):
 
 def calculate_odds(server_id):
     predictions = get_predictions(server_id)
-    odds_count = {}
-    for _, first_place, _, _ in predictions:
-        if first_place in odds_count:
-            odds_count[first_place] += 1
+    
+    first_place_count = {}
+    top_3_count = {}
+    
+    for _, first, second, third in predictions:
+        if first in first_place_count:
+            first_place_count[first] += 1
         else:
-            odds_count[first_place] = 1
+            first_place_count[first] = 1
+
+        if first in top_3_count:
+            top_3_count[first] += 1
+        else:
+            top_3_count[first] = 1
+        if second in top_3_count:
+            top_3_count[second] += 1
+        else:
+            top_3_count[second] = 1
+        if third in top_3_count:
+            top_3_count[third] += 1
+        else:
+            top_3_count[third] = 1        
 
     # Convert counts to odds
-    total = sum(odds_count.values())
-    odds = {player: round(count / total, 2) for player, count in odds_count.items()}
-    return odds
+    first_place_total = sum(first_place_count.values())
+    total_predictions = len(predictions)
+    
+    first_place_odds = {player: round(count / first_place_total, 2) for player, count in first_place_count.items()}
+    first_place_odds = dict(sorted(first_place_odds.items(), key=lambda item: item[1], reverse=True))
+
+    top_3_odds = {player: round(count / total_predictions, 2) for player, count in top_3_count.items()}
+    top_3_odds = dict(sorted(top_3_odds.items(), key=lambda item: item[1], reverse=True))   
+    
+    return first_place_odds, top_3_odds
+
+def clear_predictions(server_id):
+    conn = connect(server_id)
+    cur = conn.cursor()
+
+    #delete all rows
+    cur.execute("DELETE FROM predictions")
+    conn.commit()
