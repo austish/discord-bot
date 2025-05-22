@@ -34,6 +34,7 @@ async def hello(interaction: discord.Interaction):                              
 
 @bot.tree.command(name='help', description='get help')               
 async def help(interaction: discord.Interaction):
+
     message = ""
     message += ":white_check_mark: **PLAYER POINTS:**\n"
     message += "   `/playerpoint` Give player points\n"
@@ -57,11 +58,10 @@ async def help(interaction: discord.Interaction):
     message += "   `/list fill` Fill player list with all users\n\n"
 
     message += ":watch: **PREDICTIONS:**\n"
-    message += "   `/prediction place` Place your top 3 predictions.\n"
+    message += "   `/prediction place` Place your top 5 predictions.\n"
+    message += "   `/prediction view` View your current predictions.\n"
     message += "   `/prediction odds` View current odds.\n"
     message += "   `/prediction clear` Clear all predictions.\n"
-
-
 
     await interaction.response.send_message(message)
 
@@ -191,9 +191,9 @@ def display_list(names):
 #####################
 
 @predictionGroup.command(name='place', description="Place a prediction for the top 3 positions")
-async def predict(interaction: discord.Interaction, first_place: discord.Member, second_place: discord.Member, third_place: discord.Member):
+async def predict(interaction: discord.Interaction, first_place: discord.Member, second_place: discord.Member, third_place: discord.Member, fourth_place: discord.Member, fifth_place: discord.Member):
     # Check if any of the members are duplicated
-    if len({first_place.id, second_place.id, third_place.id}) < 3:
+    if len({first_place.id, second_place.id, third_place.id, fourth_place.id, fifth_place.id}) < 5:
         await interaction.response.send_message(
             f"{interaction.user.mention} You cannot select the same user more than once.",
             ephemeral=True
@@ -201,17 +201,17 @@ async def predict(interaction: discord.Interaction, first_place: discord.Member,
         return
     
     # Proceed with adding the prediction if all three are unique
-    functions.add_prediction(interaction.guild.id, interaction.user.id, first_place.display_name, second_place.display_name, third_place.display_name)
+    functions.add_prediction(interaction.guild.id, interaction.user.id, first_place.display_name, second_place.display_name, third_place.display_name, fourth_place.display_name, fifth_place.display_name)
     
     await interaction.response.send_message(
-        f"{interaction.user.mention} has placed a prediction: 1st - {first_place.display_name}, 2nd - {second_place.display_name}, 3rd - {third_place.display_name}"
+        f"{interaction.user.mention} has placed a prediction:\n1st - {first_place.display_name}\n2nd - {second_place.display_name}\n3rd - {third_place.display_name}\n4th - {fourth_place.display_name}\n5th - {fifth_place.display_name}"
     )
 
 @predictionGroup.command(name='odds', description="Get the current odds for the first place prediction")
 async def predict_odds(interaction: discord.Interaction):
-    first_place_odds, top_3_odds = functions.calculate_odds(interaction.guild.id)
+    odds = functions.calculate_odds(interaction.guild.id)
 
-    if not first_place_odds:
+    if not odds:
         await interaction.response.send_message("No predictions have been made yet.")
         return
 
@@ -219,24 +219,26 @@ async def predict_odds(interaction: discord.Interaction):
     em = discord.Embed(title="Current Odds")
     players = set()
 
-    # First place
     rank = 1
-    for player, odd in first_place_odds.items():
-        player_name = f"{rank}. {player} - {odd * 100:g}%"
-        odds_text = f"Top 3: {top_3_odds[player] * 100:g}%"
+    for player, odd in odds.items():
+        player_name = f"{rank}. {player}"
+        odds_text = f"{odds[player] * 100:.2f}%"
         em.add_field(name=player_name, value=odds_text, inline=False)
         players.add(player)
         rank += 1
-    
-    # Top 3
-    for player, odd in top_3_odds.items():
-        if player not in players:
-            player_name = f"{rank}. {player} - 0%"
-            odds_text = f"Top 3: {top_3_odds[player] * 100:g}%"
-            em.add_field(name=player_name, value=odds_text, inline=False)
-            rank += 1
 
     await interaction.response.send_message(embed=em)
+
+@predictionGroup.command(name='view', description="View your predictions")
+async def view_predictions(interaction: discord.Interaction):
+    prediction = functions.get_user_predictions(interaction.guild.id, interaction.user.id)
+    if not prediction:
+        await interaction.response.send_message("You have no predictions.")
+        return\
+
+    await interaction.response.send_message(
+        f"Your predictions:\n1st - {prediction[1]}\n2nd - {prediction[2]}\n3rd - {prediction[3]}\n4th - {prediction[4]}\n5th - {prediction[5]}"
+    )
 
 @predictionGroup.command(name='clear', description="Clear all predictions")
 async def clear_predictions(interaction: discord.Interaction):

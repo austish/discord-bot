@@ -140,10 +140,10 @@ def remove_player(server_id, username):
 
 ### PREDICTIONS ###
 
-def add_prediction(server_id, user_id, first_place, second_place, third_place):
+def add_prediction(server_id, user_id, first_place, second_place, third_place, fourth_place, fifth_place):
     conn = connect(server_id)
     cur = conn.cursor()
-    cur.execute(f"CREATE TABLE IF NOT EXISTS predictions (user_id integer, first_place text, second_place text, third_place text)")
+    cur.execute(f"CREATE TABLE IF NOT EXISTS predictions (user_id integer, first_place text, second_place text, third_place text, fourth_place text, fifth_place text)")
     
     # Check if prediction already exists for the user
     cur.execute("SELECT rowid FROM predictions WHERE user_id = ?", (user_id,))
@@ -151,11 +151,11 @@ def add_prediction(server_id, user_id, first_place, second_place, third_place):
 
     if len(search) == 0:
         # Insert new prediction
-        cur.execute("INSERT INTO predictions VALUES (?, ?, ?, ?)", (user_id, first_place, second_place, third_place))
+        cur.execute("INSERT INTO predictions VALUES (?, ?, ?, ?, ?, ?)", (user_id, first_place, second_place, third_place, fourth_place, fifth_place))
     else:
         # Update existing prediction
-        cur.execute("UPDATE predictions SET first_place = ?, second_place = ?, third_place = ? WHERE user_id = ?", 
-                    (first_place, second_place, third_place, user_id))
+        cur.execute("UPDATE predictions SET first_place = ?, second_place = ?, third_place = ?, fourth_place = ?, fifth_place = ? WHERE user_id = ?", 
+                    (first_place, second_place, third_place, fourth_place, fifth_place, user_id))
 
     conn.commit()
 
@@ -166,42 +166,52 @@ def get_predictions(server_id):
     predictions = cur.fetchall()
     return predictions
 
+def get_user_predictions(server_id, user_id):
+    conn = connect(server_id)
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM predictions WHERE user_id = ?", (user_id,))
+    predictions = cur.fetchall()
+
+    if len(predictions) == 0:
+        return None
+    else:
+        return predictions[0]
+
 def calculate_odds(server_id):
     predictions = get_predictions(server_id)
     
-    first_place_count = {}
-    top_3_count = {}
+    votes = {}
     
-    for _, first, second, third in predictions:
-        if first in first_place_count:
-            first_place_count[first] += 1
+    for _, first, second, third, fourth, fifth in predictions:
+        if first in votes:
+            votes[first] += 10
         else:
-            first_place_count[first] = 1
-
-        if first in top_3_count:
-            top_3_count[first] += 1
+            votes[first] = 10
+        if second in votes:
+            votes[second] += 7
         else:
-            top_3_count[first] = 1
-        if second in top_3_count:
-            top_3_count[second] += 1
+            votes[second] = 7
+        if third in votes:
+            votes[third] += 5
+        else:  
+            votes[third] = 5
+        if fourth in votes:
+            votes[fourth] += 3
         else:
-            top_3_count[second] = 1
-        if third in top_3_count:
-            top_3_count[third] += 1
+            votes[fourth] = 3
+        if fifth in votes:  
+            votes[fifth] += 1
         else:
-            top_3_count[third] = 1        
+            votes[fifth] = 1      
+        
+    print(votes)
 
     # Convert counts to odds
-    first_place_total = sum(first_place_count.values())
-    total_predictions = len(predictions)
+    total_predictions = len(predictions) * 26  # 10 + 7 + 5 + 3 + 1 = 26
+    odds = {player: count / total_predictions for player, count in votes.items()}
+    odds = dict(sorted(odds.items(), key=lambda item: item[1], reverse=True))
     
-    first_place_odds = {player: round(count / first_place_total, 2) for player, count in first_place_count.items()}
-    first_place_odds = dict(sorted(first_place_odds.items(), key=lambda item: item[1], reverse=True))
-
-    top_3_odds = {player: round(count / total_predictions, 2) for player, count in top_3_count.items()}
-    top_3_odds = dict(sorted(top_3_odds.items(), key=lambda item: item[1], reverse=True))   
-    
-    return first_place_odds, top_3_odds
+    return odds
 
 def clear_predictions(server_id):
     conn = connect(server_id)
